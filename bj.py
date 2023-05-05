@@ -92,8 +92,6 @@ def split_cards(hand_of_player):
         hit(fourth_player_hand)
 
 
-def ya_makaka():pass
-
 deck = []
 player_hand = []
 dealer_hand = []
