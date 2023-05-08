@@ -4,7 +4,7 @@ import random
 
 class Card:
 
-    def __init__(self, card_suit, value, card_sign):
+    def init(self, card_suit, value, card_sign):
         self.card_suit = card_suit
         self.value = value
         self.card_sign = card_sign
@@ -21,7 +21,7 @@ class Card:
 
 class Hand:
 
-    def __init__(self, sequence_number, first_value, second_value):
+    def init(self, sequence_number, first_value, second_value):
         self.sequence_number = sequence_number
         self.first_value = first_value
         self.second_value = second_value
