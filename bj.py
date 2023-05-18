@@ -45,7 +45,7 @@ class Hand:
             print("Ты лох")
 
     def hit(self):
-        temp = deck[random.randint(0, len(deck))]
+        temp = deck[random.randint(0, len(deck)-1)]
         self.cards_in_hand.append(temp)
         deck.remove(temp)
         self.count_card_values()
@@ -54,26 +54,26 @@ class Hand:
         for i in range(2):
             self.hit()
 
-    # """ Hand generation (for splitting) """
-    #
-    # def hand_split():
-    #     hand_numbers = ["First", "Second", "Third", "Fourth"]
-    #     hands.append(Hand())
+    def split_hand(self):
+        hands.append(Hand(len(hands)+1, 0, 0))
+        hands[-1].cards_in_hand.append(self.cards_in_hand.pop(1))
+        self.hit()
+        hands[-1].hit()
+
+
+def split_check(hand):
+    if len(hand.cards_in_hand) == 2 and hand.cards_in_hand[0].get_value() == hand.cards_in_hand[1].get_value():
+        """ Activate split button for selected hand"""
+        pass
 
 
 ''' Start game button '''
-
-
 def start_game():
-    global balance
-    balance = 25000
-    first_hand = Hand(1, 0, 0)
-    hands.append(first_hand)
+    hands.append(Hand(1, 0, 0))
+    generate_deck()
 
 
 ''' Deck generation button '''
-
-
 def generate_deck():
     card_suits = ["spades", "clubs", "hearts", "diamonds"]
     card_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
@@ -82,58 +82,11 @@ def generate_deck():
         for j in range(len(card_signs)):
             deck.append(Card(i, card_values[j], card_signs[j]))
 
-
-''' First deal '''
-# def deal():
-#     global player_hands_amount, player_cards_values, dealer_cards_values
-#     player_hands_amount = 1
-#     for i in range(2):
-#         temp = deck[random.randint(0, len(deck))]
-#         player_hand.append(temp)
-#         deck.remove(temp)
-#         temp = deck[random.randint(0, len(deck))]
-#         dealer_hand.append(temp)
-#         deck.remove(temp)
-#     player_cards_values = count_values(player_hand)
-#     dealer_cards_values = count_values(dealer_hand)
-
-''' Take one card '''
-# def hit(hand):
-#     temp = deck[random.randint(0, len(deck))]
-#     hand.append(temp)
-#     deck.remove(temp)
-#     player_cards_values = count_values(player_hand)
-#     dealer_cards_values = count_values(dealer_hand)
-
 ''' Hold '''
 # def hold():
 #     pass
 
-''' Split your deck '''
-# def split_cards(hand_of_player):
-#     global second_player_hand, third_player_hand, fourth_player_hand
-#     player_hands_amount += 1
-#     if player_hands_amount == 2:
-#         second_player_hand = []
-#         temp = hand_of_player[random.randint(0, len(hand_of_player))]
-#         second_player_hand.append(temp)
-#         hand_of_player.remove(temp)
-#         hit(hand_of_player)
-#         hit(second_player_hand)
-#     elif player_hands_amount == 3:
-#         third_player_hand = []
-#         temp = hand_of_player[random.randint(0, len(hand_of_player))]
-#         third_player_hand.append(temp)
-#         hand_of_player.remove(temp)
-#         hit(hand_of_player)
-#         hit(third_player_hand)
-#     else:
-#         fourth_player_hand = []
-#         temp = hand_of_player[random.randint(0, len(hand_of_player))]
-#         fourth_player_hand.append(temp)
-#         hand_of_player.remove(temp)
-#         hit(hand_of_player)
-#         hit(fourth_player_hand)
 hands_counter = 0
 deck = []
 hands = []
+player_bid = 0
