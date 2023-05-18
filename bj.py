@@ -4,7 +4,7 @@ import random
 
 class Card:
 
-    def init(self, card_suit, value, card_sign):
+    def __init__(self, card_suit, value, card_sign):
         self.card_suit = card_suit
         self.value = value
         self.card_sign = card_sign
@@ -21,7 +21,7 @@ class Card:
 
 class Hand:
 
-    def init(self, sequence_number, first_value, second_value):
+    def __init__(self, sequence_number, first_value, second_value):
         self.sequence_number = sequence_number
         self.first_value = first_value
         self.second_value = second_value
@@ -39,36 +39,48 @@ class Hand:
         for i in self.cards_in_hand:
             sum += i.get_value()
         self.card_values_sum = sum
+        self.first_value = self.second_value = self.card_values_sum
 
-    def hit(self, deck):
+        if self.card_values_sum > 21:
+            print("Ты лох")
+
+    def hit(self):
         temp = deck[random.randint(0, len(deck))]
         self.cards_in_hand.append(temp)
         deck.remove(temp)
         self.count_card_values()
 
+    def deal(self):
+        for i in range(2):
+            self.hit()
+
+    # """ Hand generation (for splitting) """
+    #
+    # def hand_split():
+    #     hand_numbers = ["First", "Second", "Third", "Fourth"]
+    #     hands.append(Hand())
+
 
 ''' Start game button '''
+
+
 def start_game():
     global balance
     balance = 25000
+    first_hand = Hand(1, 0, 0)
+    hands.append(first_hand)
 
 
 ''' Deck generation button '''
+
+
 def generate_deck():
     card_suits = ["spades", "clubs", "hearts", "diamonds"]
-    card_values = [[1, 11], 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
+    card_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
     card_signs = ["A", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "J", "Q", "K"]
     for i in card_suits:
         for j in range(len(card_signs)):
             deck.append(Card(i, card_values[j], card_signs[j]))
-
-
-''' Count your card values '''
-def count_values(hand):
-    summ = 0
-    for i in hand:
-        summ += i.get_card()
-    return summ
 
 
 ''' First deal '''
@@ -122,5 +134,6 @@ def count_values(hand):
 #         hand_of_player.remove(temp)
 #         hit(hand_of_player)
 #         hit(fourth_player_hand)
-
+hands_counter = 0
 deck = []
+hands = []
