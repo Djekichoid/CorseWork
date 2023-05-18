@@ -26,7 +26,7 @@ class Hand:
         self.first_value = first_value
         self.second_value = second_value
         self.cards_in_hand = []
-        self.card_values_sum = 0
+        # self.card_values_sum = 0
 
     def get_hand_number(self):
         return self.sequence_number
@@ -35,17 +35,29 @@ class Hand:
         return [self.first_value, self.second_value]
 
     def count_card_values(self):
-        sum = 0
-        for i in self.cards_in_hand:
-            sum += i.get_value()
-        self.card_values_sum = sum
-        self.first_value = self.second_value = self.card_values_sum
-
-        if self.card_values_sum > 21:
-            print("Ты лох")
+        i = self.cards_in_hand[len(self.cards_in_hand) - 1]
+        self.first_value += i.get_value()
+        self.second_value += i.get_value()
+        if i.get_sign().__eq__("A"):
+            temp = self.second_value + 10
+            if temp > 21:
+                print("You lost")
+                pass
+            elif temp==21:
+                self.first_value=self.second_value=21
+            else:
+                self.second_value=temp
+        if self.first_value<21 and self.second_value>21:
+            self.second_value=self.first_value
+        if self.first_value==21 or self.second_value==21:
+            self.first_value = 21
+            self.second_value = 21
+            print("You win")
+        elif self.first_value>21 or (self.first_value>21 and self.second_value>21):
+            print("You lost")
 
     def hit(self):
-        temp = deck[random.randint(0, len(deck))]
+        temp = deck[random.randint(0, len(deck)-1)]
         self.cards_in_hand.append(temp)
         deck.remove(temp)
         self.count_card_values()
