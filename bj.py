@@ -78,6 +78,8 @@ def split_check(hand):
         """ Activate split button for selected hand"""
         pass
 
+def makaka():
+    return 0
 
 ''' Start game button '''
 def start_game():
