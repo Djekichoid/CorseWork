@@ -1,27 +1,20 @@
 # import tkinter as tk
+from tkinter import PhotoImage
 import random
 
 
 class Card:
 
-    def __init__(self, card_suit, value, card_sign):
+    def init(self, card_suit, value, card_sign):
         self.card_suit = card_suit
         self.value = value
         self.card_sign = card_sign
-
-    def get_value(self):
-        return self.value
-
-    def get_sign(self):
-        return self.card_sign
-
-    def get_suit(self):
-        return self.card_suit
+        self.photo=PhotoImage(file="images\\" + self.card_suit + "\\" + card_sign + ".png")
 
 
 class Hand:
 
-    def __init__(self, sequence_number, first_value, second_value):
+    def init(self, sequence_number, first_value, second_value):
         self.sequence_number = sequence_number
         self.first_value = first_value
         self.second_value = second_value
@@ -38,7 +31,7 @@ class Hand:
         i = self.cards_in_hand[len(self.cards_in_hand) - 1]
         self.first_value += i.get_value()
         self.second_value += i.get_value()
-        if i.get_sign().__eq__("A"):
+        if i.get_sign().eq("A"):
             temp = self.second_value + 10
             if temp > 21:
                 print("You lost")
@@ -78,8 +71,6 @@ def split_check(hand):
         """ Activate split button for selected hand"""
         pass
 
-def makaka():
-    return 0
 
 ''' Start game button '''
 def start_game():
@@ -91,7 +82,7 @@ def start_game():
 def generate_deck():
     card_suits = ["spades", "clubs", "hearts", "diamonds"]
     card_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
-    card_signs = ["A", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "J", "Q", "K"]
+    card_signs = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
     for i in card_suits:
         for j in range(len(card_signs)):
             deck.append(Card(i, card_values[j], card_signs[j]))
