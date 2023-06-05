@@ -3,12 +3,19 @@ from tkinter import *
 from tkinter import messagebox as m
 import math
 
+# import time as t
+
 widgets = []
 hand_number = 0
+bid = 0
 
 
 def chicha():
     return 0
+
+
+def check_win():
+    pass
 
 
 def var_get():
@@ -21,8 +28,12 @@ def var_check():
     for i in range(1, len(hands)):
         if hands[i].status.__eq__("Inactive"):
             temp += 1
-        if temp == len(hands):
-            pass
+    if temp == len(hands) - 1:
+        dealer_play()
+    else:
+        for i in range(1, len(hands)):
+            if hands[i].status.__eq__("Active"):
+                var.set(i)
 
 
 def check_values():
@@ -30,15 +41,25 @@ def check_values():
     temp1 = hands[hand_number].second_value
     if temp == 21 or temp1 == 21:
         hands[hand_number].status = "Inactive"
+        widgets[hand_number * 3 + 1]["text"] = "21"
         hold()
     elif temp > 21:
-        hands[hand_number].status = "Inactive"
+        widgets[hand_number * 3 + 1]["text"] = str(temp)
+        m.showinfo(message="You lost")
         hold()
+        if len(hands) == 2:
+            dealer_play()
+        else:
+            var_check()
+    elif temp != temp1:
+        widgets[hand_number * 3 + 1]["text"] = str(temp) + "(" + str(temp1) + ")"
+    elif temp == temp1:
+        widgets[hand_number * 3 + 1]["text"] = str(temp)
 
 
 def start_game():
-    hands.append(Hand(0, 0, 0))
-    hands.append(Hand(1, 0, 0))
+    hands.append(Hand(0, 0))
+    hands.append(Hand(0, 0))
     hands[1].actual_bid = bid
     generate_deck()
     hands[0].deal()
@@ -49,26 +70,36 @@ def start_game():
 def show_cards_from_deal():
     global widgets
     widgets.append(Canvas(frame_dealer, relief="groove", width=400, height=96, bg="#00B343", borderwidth=0))
+    widgets.append(
+        Label(frame_dealer, font="Arial 14", text=str(hands[0].cards_in_hand[0].value) + "+?", relief="groove", width=6,
+              height=1, bg="yellow"))
     widgets.append(Canvas(frame_player, relief="groove", width=196, height=250, bg="#00B343", borderwidth=0))
     widgets.append(Radiobutton(frame_player, variable=var, bg="#00b343", value=1))
-    widgets[0].grid(row=0, column=0, sticky="S")
-    widgets[1].grid(row=0, column=0, sticky="N", padx=5)
-    widgets[2].grid(row=1, column=0, sticky="N")
+    widgets.append(Label(frame_player, font="Arial 14", relief="groove", width=6, height=1, bg="yellow"))
+    widgets[0].grid(row=1, column=0, sticky="S")
+    widgets[1].grid(row=0, column=0, sticky="S")
+    widgets[2].grid(row=1, column=0, sticky="N", padx=5)
+    widgets[3].grid(row=2, column=0, sticky="N")
+    widgets[4].grid(row=0, column=0, sticky="S")
     widgets[0].create_image(40, 50, image=hands[0].cards_in_hand[0].photo)
     widgets[0].create_image(80, 50, image=back)
     for i in range(len(hands[1].cards_in_hand)):
         z = math.floor(i / 4)
-        widgets[1].create_image(40 + 40 * (i - 4 * z), 50 + 75 * z, image=hands[1].cards_in_hand[i].photo)
-    print(hands[1].first_value)
-    print(hands[1].second_value)
+        widgets[2].create_image(40 + 40 * (i - 4 * z), 50 + 75 * z, image=hands[1].cards_in_hand[i].photo)
+    var_get()
+    check_values()
 
 
-def bid():
+def bid_button():
     global bid, balance
     try:
         bid = int(entry_of_bid.get())
         if bid > balance or bid < 0:
             raise ValueError
+        button_hit["state"] = ACTIVE
+        button_split["state"] = ACTIVE
+        button_double["state"] = ACTIVE
+        button_hold["state"] = ACTIVE
         balance -= bid
         button_bid.destroy()
         entry_of_bid.destroy()
@@ -87,13 +118,103 @@ def hit_button():
 
 def show_card():
     z = math.floor((len(hands[hand_number].cards_in_hand) - 1) / 4)
-    widgets[hand_number * 2 - 1].create_image(40 + 40 * (len(hands[hand_number].cards_in_hand) - 1 - 4 * z),
+    widgets[hand_number * 3 - 1].create_image(40 + 40 * (len(hands[hand_number].cards_in_hand) - 1 - 4 * z),
                                               50 + 75 * z, image=hands[1].cards_in_hand[-1].photo)
 
 
 def hold():
     var_get()
-    widgets[hand_number * 2]["state"] = DISABLED
+    hands[hand_number].status = "Inactive"
+    widgets[hand_number * 3]["state"] = DISABLED
+    widgets[hand_number * 3 + 1]["text"] = hands[hand_number].second_value
+    var_check()
+
+
+def split():
+    global widgets, balance, bid
+    var_get()
+    if len(hands[hand_number].cards_in_hand) == 2:
+        if hands[hand_number].cards_in_hand[0].value == hands[hand_number].cards_in_hand[1].value:
+            pass
+        else:
+            m.showwarning(message="You can't do this!!")
+            return
+    else:
+        m.showwarning(message="You can't do this!!")
+        return
+    hands.append(Hand(0, 0))
+    hands[-1].actual_bid = bid
+    print(hands[-1].actual_bid)
+    balance -= bid
+    balance_label["text"] = "Balance:" + str(balance)
+    widgets[hand_number * 3 - 1].destroy()
+    widgets.remove(widgets[hand_number * 3 - 1])
+    widgets.insert(hand_number * 3 - 1,
+                   Canvas(frame_player, relief="groove", width=196, height=250, bg="#00B343", borderwidth=0))
+    widgets[hand_number * 3 - 1].grid(row=1, column=hand_number - 1, sticky="N", padx=5)
+    widgets.append(Canvas(frame_player, relief="groove", width=196, height=250, bg="#00B343", borderwidth=0))
+    widgets.append(Radiobutton(frame_player, variable=var, bg="#00b343", value=len(hands) - 1))
+    widgets.append(Label(frame_player, font="Arial 14", relief="groove", width=6, height=1, bg="yellow"))
+    widgets[len(widgets) - 3].grid(row=1, column=len(hands) - 2, sticky="N", padx=5)
+    widgets[len(widgets) - 2].grid(row=2, column=len(hands) - 2, sticky="N")
+    widgets[len(widgets) - 1].grid(row=0, column=len(hands) - 2, sticky="S")
+    hands[-1].cards_in_hand.append(hands[hand_number].cards_in_hand.pop(1))
+    hands[hand_number].first_value = 0
+    hands[-1].first_value = 0
+    hands[hand_number].second_value = 0
+    hands[-1].second_value = 0
+    hands[hand_number].count_card_values()
+    hands[-1].count_card_values()
+    hands[-1].hit()
+    hands[hand_number].hit()
+    for i in range(len(hands[hand_number].cards_in_hand)):
+        z = math.floor(i / 4)
+        widgets[hand_number * 3 - 1].create_image(40 + 40 * (i - 4 * z), 50 + 75 * z,
+                                                  image=hands[hand_number].cards_in_hand[i].photo)
+    var_get()
+    check_values()
+    for i in range(len(hands[-1].cards_in_hand)):
+        z = math.floor(i / 4)
+        widgets[len(widgets) - 3].create_image(40 + 40 * (i - 4 * z), 50 + 75 * z,
+                                               image=hands[-1].cards_in_hand[i].photo)
+    var.set(len(hands) - 1)
+    var_get()
+    check_values()
+    button_split["state"] = DISABLED
+
+
+def dealer_play():
+    dealer_cards_reveal()
+
+    if hands[0].first_value >= 17 or hands[0].first_value == 21:
+        temp = hands[0].first_value
+    else:
+        while True:
+            hands[0].hit()
+            show_dealer_cards()
+            temp = hands[0].first_value
+            temp1 = hands[0].second_value
+            if temp >= 17 or temp >= 17:
+                break
+            elif temp == 21 or temp1 == 21:
+                break
+            elif temp > 21:
+                break
+    widgets[1]["text"] = str(temp)
+
+
+def dealer_cards_reveal():
+    global widgets
+    widgets[0].destroy()
+    widgets.remove(widgets[0])
+    widgets.insert(0, Canvas(frame_dealer, relief="groove", width=400, height=96, bg="#00B343", borderwidth=0))
+    widgets[0].grid(row=1, column=0, sticky="S")
+    widgets[0].create_image(40, 50, image=hands[0].cards_in_hand[0].photo)
+    widgets[0].create_image(80, 50, image=hands[0].cards_in_hand[1].photo)
+
+
+def show_dealer_cards():
+    widgets[0].create_image(40 + 40 * (len(hands[0].cards_in_hand) - 1), 50, image=hands[0].cards_in_hand[-1].photo)
 
 
 balance = 25000
@@ -125,58 +246,27 @@ frame_buttons = Frame(root, relief="groove", width=1000, height=100, bg="#00B343
 frame_buttons.grid(row=3, column=0, sticky="WES")
 root.rowconfigure(2, weight=1)
 
-button_split = Button(frame_buttons, text="SPLIT", font="Arial 14", width=22, bg="limegreen", command=chicha)
+button_split = Button(frame_buttons, text="SPLIT", font="Arial 14", width=22, bg="limegreen", state=DISABLED,
+                      command=split)
 button_split.grid(row=1, column=0, sticky="WES")
 
-button_double = Button(frame_buttons, text="DOUBLE", font="Arial 14", width=22, bg="limegreen", command=chicha)
+button_double = Button(frame_buttons, text="DOUBLE", font="Arial 14", width=22, bg="limegreen", state=DISABLED,
+                       command=chicha)
 button_double.grid(row=1, column=1, sticky="WES")
 
-button_hit = Button(frame_buttons, text="HIT", font="Arial 14", width=22, bg="limegreen", command=hit_button)
+button_hit = Button(frame_buttons, text="HIT", font="Arial 14", width=22, bg="limegreen", state=DISABLED,
+                    command=hit_button)
 button_hit.grid(row=1, column=2, sticky="S")
 
-button_hold = Button(frame_buttons, text="HOLD", font="Arial 14", width=22, bg="limegreen", command=chicha)
+button_hold = Button(frame_buttons, text="HOLD", font="Arial 14", width=22, bg="limegreen", state=DISABLED,
+                     command=hold)
 button_hold.grid(row=1, column=3, sticky="WES")
 
-button_bid = Button(frame_buttons, text="BID", font="Arial 14", width=22, bg="limegreen", command=bid)
+button_bid = Button(frame_buttons, text="BID", font="Arial 14", width=22, bg="limegreen", command=bid_button)
 button_bid.grid(row=1, column=3, sticky="WES")
 
 entry_of_bid = Entry(frame_buttons, font="Arial 25", width=15, relief="groove", bg="#00b343")
 entry_of_bid.grid(row=0, column=3, sticky="WES")
 
 back = PhotoImage(file="images\\card_back.png")
-# generate_deck()
-# hands.append(Hand(1, 0, 0))
-# canvas_hand1 = Canvas(frame_player, relief="groove", width=196, height=250, bg="#00B343", borderwidth=0)
-# canvas_hand1.grid(row=0, column=0, padx=5)
-# for i in deck:
-#     hands[0].cards_in_hand.append(i)
-# m.showinfo(message="sljdnf")
-# for i in range(12):
-#     m.showinfo(message="sljdnf")
-#     z = math.floor((i) / 4)
-#     canvas_hand1.create_image(40 + 40 * (i - 4 * z), 50 + 75 * z, image=hands[0].cards_in_hand[i].photo)
-# canvas_hand2 = Canvas(frame_player, relief="groove", width=196, height=250, bg="#00B343", borderwidth=0)
-# canvas_hand2.grid(row=0, column=1, padx=5)
-# for i in range(12):
-#     m.showinfo(message="sljdnf")
-#     z = math.floor((i) / 4)
-#     canvas_hand2.create_image(40 + 40 * (i - 4 * z), 50 + 75 * z, image=hands[0].cards_in_hand[i].photo)
-# canvas_hand3 = Canvas(frame_player, relief="groove", width=196, height=250, bg="#00B343", borderwidth=0)
-# canvas_hand3.grid(row=0, column=2, padx=5)
-# for i in range(12):
-#     m.showinfo(message="sljdnf")
-#     z = math.floor((i) / 4)
-#     canvas_hand3.create_image(40 + 40 * (i - 4 * z), 50 + 75 * z, image=hands[0].cards_in_hand[i].photo)
-# canvas_hand4 = Canvas(frame_player, relief="groove", width=196, height=250, bg="#00B343", borderwidth=0)
-# canvas_hand4.grid(row=0, column=3, padx=5)
-# for i in range(12):
-#     m.showinfo(message="sljdnf")
-#     z = math.floor((i) / 4)
-#     canvas_hand4.create_image(40 + 40 * (i - 4 * z), 50 + 75 * z, image=hands[0].cards_in_hand[i].photo)
-# canvas_hand5 = Canvas(frame_dealer, relief="groove", width=400, height=96, bg="#00B343", borderwidth=0)
-# canvas_hand5.grid(row=0, column=0, sticky="S")
-# for i in range(9):
-#     m.showinfo(message="sljdnf")
-#     z = math.floor((i) / 4)
-#     canvas_hand5.create_image(40 + 40 * i, 50, image=hands[0].cards_in_hand[i].photo)
 root.mainloop()
