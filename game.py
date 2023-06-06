@@ -2,20 +2,11 @@ from bj import *
 from tkinter import *
 from tkinter import messagebox as m
 import math
-
-# import time as t
+import time as t
 
 widgets = []
 hand_number = 0
 bid = 0
-
-
-def chicha():
-    return 0
-
-
-def check_win():
-    pass
 
 
 def var_get():
@@ -86,6 +77,7 @@ def show_cards_from_deal():
     for i in range(len(hands[1].cards_in_hand)):
         z = math.floor(i / 4)
         widgets[2].create_image(40 + 40 * (i - 4 * z), 50 + 75 * z, image=hands[1].cards_in_hand[i].photo)
+    var.set(1)
     var_get()
     check_values()
 
@@ -119,7 +111,7 @@ def hit_button():
 def show_card():
     z = math.floor((len(hands[hand_number].cards_in_hand) - 1) / 4)
     widgets[hand_number * 3 - 1].create_image(40 + 40 * (len(hands[hand_number].cards_in_hand) - 1 - 4 * z),
-                                              50 + 75 * z, image=hands[1].cards_in_hand[-1].photo)
+                                              50 + 75 * z, image=hands[hand_number].cards_in_hand[-1].photo)
 
 
 def hold():
@@ -142,9 +134,11 @@ def split():
     else:
         m.showwarning(message="You can't do this!!")
         return
+    if balance < hands[hand_number].actual_bid:
+        m.showwarning(message="You can't do this!!")
+        return
     hands.append(Hand(0, 0))
     hands[-1].actual_bid = bid
-    print(hands[-1].actual_bid)
     balance -= bid
     balance_label["text"] = "Balance:" + str(balance)
     widgets[hand_number * 3 - 1].destroy()
@@ -171,7 +165,6 @@ def split():
         z = math.floor(i / 4)
         widgets[hand_number * 3 - 1].create_image(40 + 40 * (i - 4 * z), 50 + 75 * z,
                                                   image=hands[hand_number].cards_in_hand[i].photo)
-    var_get()
     check_values()
     for i in range(len(hands[-1].cards_in_hand)):
         z = math.floor(i / 4)
@@ -183,24 +176,99 @@ def split():
     button_split["state"] = DISABLED
 
 
+def double_button():
+    global balance
+    var_get()
+    if len(hands[hand_number].cards_in_hand) == 2:
+        if balance < hands[hand_number].actual_bid:
+            m.showwarning(message="You can't do this")
+            return
+    else:
+        m.showwarning(message="You can't do this")
+        return
+    hands[hand_number].actual_bid += bid
+    balance -= bid
+    balance_label["text"] = "Balance:" + str(balance)
+
+    hands[hand_number].hit()
+    widgets[hand_number * 3]["state"] = DISABLED
+    hands[hand_number].status = "Inactive"
+    show_card()
+    check_values()
+    var_check()
+
+
 def dealer_play():
+    global balance, frame_player, frame_dealer, button_bid, button_hit, button_hold, button_split, button_double, entry_of_bid, widgets, hands, hand_number, root
     dealer_cards_reveal()
 
     if hands[0].first_value >= 17 or hands[0].first_value == 21:
-        temp = hands[0].first_value
+        hands[0].second_value = hands[0].first_value
+    elif hands[0].second_value >= 17 or hands[0].second_value == 21:
+        hands[0].first_value = hands[0].second_value
+
+
     else:
         while True:
             hands[0].hit()
             show_dealer_cards()
             temp = hands[0].first_value
             temp1 = hands[0].second_value
-            if temp >= 17 or temp >= 17:
+            if temp >= 17 or 21 >= temp1 >= 17:
                 break
-            elif temp == 21 or temp1 == 21:
-                break
-            elif temp > 21:
-                break
-    widgets[1]["text"] = str(temp)
+        if temp == 21 or temp1 == 21:
+            hands[0].first_value = 21
+            hands[0].second_value = 21
+        elif temp < 17 <= temp1:
+            hands[0].first_value = temp1
+        elif temp >= 17 > temp1:
+            hands[0].second_value = temp
+    widgets[1]["text"] = str(hands[0].first_value)
+    for i in range(1, len(hands)):
+        if hands[i].second_value > 21:
+            continue
+        elif hands[0].first_value > 21:
+            balance += hands[i].actual_bid * 2
+            break
+        else:
+            if hands[i].second_value == hands[0].first_value:
+                balance += hands[i].actual_bid
+                continue
+            elif 21 - hands[0].first_value > 21 - hands[i].second_value:
+                balance += hands[i].actual_bid * 2
+                continue
+            else:
+                pass
+    balance_label["text"] = "Balance:" + str(balance)
+    m.showinfo(message="Your current balance is:" + str(balance))
+    t.sleep(1)
+
+    if balance == 0:
+        root.quit()
+
+    widgets = []
+    hand_number = 0
+
+    hands = []
+    frame_player.destroy()
+    frame_dealer.destroy()
+    frame_dealer = Frame(root, relief="groove", width=1000, height=100, bg="#00B343")
+    frame_dealer.grid(row=1, column=0)
+    root.rowconfigure(0, weight=20)
+
+    frame_player = Frame(root, relief="groove", width=196, height=250, bg="#00B343")
+    frame_player.grid(row=2, column=0)
+    root.rowconfigure(1, weight=10)
+
+    button_split["state"] = DISABLED
+    button_double["state"] = DISABLED
+    button_hold["state"] = DISABLED
+    button_hit["state"] = DISABLED
+    button_bid = Button(frame_buttons, text="BID", font="Arial 14", width=22, bg="limegreen", command=bid_button)
+    button_bid.grid(row=1, column=3, sticky="WES")
+
+    entry_of_bid = Entry(frame_buttons, font="Arial 25", width=15, relief="groove", bg="#00b343")
+    entry_of_bid.grid(row=0, column=3, sticky="WES")
 
 
 def dealer_cards_reveal():
@@ -214,7 +282,8 @@ def dealer_cards_reveal():
 
 
 def show_dealer_cards():
-    widgets[0].create_image(40 + 40 * (len(hands[0].cards_in_hand) - 1), 50, image=hands[0].cards_in_hand[-1].photo)
+    temp = len(hands[0].cards_in_hand)
+    widgets[0].create_image(40 + 40 * (temp - 1), 50, image=hands[0].cards_in_hand[-1].photo)
 
 
 balance = 25000
@@ -251,7 +320,7 @@ button_split = Button(frame_buttons, text="SPLIT", font="Arial 14", width=22, bg
 button_split.grid(row=1, column=0, sticky="WES")
 
 button_double = Button(frame_buttons, text="DOUBLE", font="Arial 14", width=22, bg="limegreen", state=DISABLED,
-                       command=chicha)
+                       command=double_button)
 button_double.grid(row=1, column=1, sticky="WES")
 
 button_hit = Button(frame_buttons, text="HIT", font="Arial 14", width=22, bg="limegreen", state=DISABLED,

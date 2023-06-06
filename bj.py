@@ -42,9 +42,7 @@ class Hand:
             self.second_value = 21
 
     def hit(self):
-        temp = deck[random.randint(0, len(deck) - 1)]
-        self.cards_in_hand.append(temp)
-        deck.remove(temp)
+        self.cards_in_hand.append(deck.pop(random.randint(0, len(deck) - 1)))
         self.count_card_values()
 
     def deal(self):
@@ -53,6 +51,8 @@ class Hand:
 
 
 def generate_deck():
+    global deck
+    deck = []
     card_suits = ["spades", "clubs", "hearts", "diamonds"]
     card_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
     card_signs = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
