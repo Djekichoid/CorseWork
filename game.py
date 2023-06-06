@@ -48,10 +48,11 @@ def check_values():
 
 
 def start_game():
+    global deck
     hands.append(Hand(0, 0))
     hands.append(Hand(0, 0))
     hands[1].actual_bid = bid
-    generate_deck()
+    deck = generate_deck()
     hands[0].deal()
     hands[1].deal()
     show_cards_from_deal()

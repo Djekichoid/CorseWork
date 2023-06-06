@@ -1,6 +1,10 @@
 from tkinter import PhotoImage
 import random
 
+hands_counter = 0
+hands = []
+deck = []
+
 
 class Card:
 
@@ -19,9 +23,6 @@ class Hand:
         self.cards_in_hand = []
         self.actual_bid = 0
         self.status = "Active"
-
-    def get_values(self):
-        return [self.first_value, self.second_value]
 
     def count_card_values(self):
         i = self.cards_in_hand[-1]
@@ -59,8 +60,4 @@ def generate_deck():
     for i in card_suits:
         for j in range(len(card_signs)):
             deck.append(Card(i, card_values[j], card_signs[j]))
-
-
-hands_counter = 0
-deck = []
-hands = []
+    return deck
