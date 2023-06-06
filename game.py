@@ -36,7 +36,6 @@ def check_values():
         hold()
     elif temp > 21:
         widgets[hand_number * 3 + 1]["text"] = str(temp)
-        m.showinfo(message="You lost")
         hold()
         if len(hands) == 2:
             dealer_play()
